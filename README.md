@@ -5,8 +5,9 @@ A simple Pytorch implementation of Capsule Networks by Dynamic Routing algorithm
 Related Paper: <a href="https://arxiv.org/pdf/1710.09829.pdf">Dynamic Routing Between Capsules</a>    <br>
 
 ### TO DO: 
-Loss Functions: <strike>Margin Loss</strike> and Reconstruction Loss <br>
-Decoder (Fully Connected Layers) Module <br>
+Running tests on Mnist and Cifar10 data sets.
+<strike> Loss Functions: Margin Loss and Reconstruction Loss </strike> <br>
+<strike> Decoder (Fully Connected Layers) Module </strike> <br>
 <strike> Digit Capsule Layer Module </strike> <br>
 <strike> Primary Capsule Layer Module </strike> <br>
 <strike> Convolutional Layer Module </strike> <br>
