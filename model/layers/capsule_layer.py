@@ -55,6 +55,7 @@ class PrimaryCapsLayer(nn.Module):
         # convert unit_list to torch array of size: [64, 32x6x6, 8] (batch_size, out_channels x patch_height x patch_width, num_units)
         s = torch.cat(unit_list, dim=-1)
         # squash each 32x6x6 capsule unit on the last dimension (num_units:8) 
+        # v = self.squash(s, dim=-1)
         v = self.squash(s, dim=-1)
         # v is of shape [64, 1152, 8]
         return v
@@ -73,10 +74,13 @@ class DigitCapsLayer(nn.Module):
         self.out_channels   = out_channels
         self.out_units      = out_units      
         self.routing_epoch  = routing_epoch
+
+        self.squash         = squash
         self.__init_params__()
                      
     def forward(self, inp):   
-        # sanity check
+        # inp is of shape: [batch_size, in_channels, in_units]
+        # sanity check        
         assert inp.size(0) == self.args['batch_size']
 
         # the prediction vector u_hat; is of shape [batch_size, in_channels(1152), out_channels(10), out_units(16), 1]
@@ -95,11 +99,9 @@ class DigitCapsLayer(nn.Module):
             c = torch.cat([c]*self.args['batch_size'], dim=0)        
             # s is of shape: [64, 1, 10, 16, 1] (summed over in_channels(i))
             s = torch.sum(u_hat*c, dim=1, keepdim=True)
-            v = squash(s, dim=3)            
+            v = self.squash(s, dim=3)            
             # update b
-            b += self.__f_delta_b__(u_hat, v)
-            print(v.shape)
-            print(u_hat.shape)
+            b = b + self.__f_delta_b__(u_hat, v)
             
         # v is of shape: [64, 1, 10, 16, 1] to [64, 10, 16]
         return v.squeeze()

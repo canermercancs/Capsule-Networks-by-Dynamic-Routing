@@ -10,11 +10,11 @@ class ConvLayer(nn.Module):
         super().__init__()
         # convolutional layer
         self.conv2d = nn.Conv2d(
-            in_channels = in_channels,
-            out_channels = out_channels,
-            kernel_size = kernel_size,
-            stride = stride,
-            padding = padding)
+                        in_channels     = in_channels,
+                        out_channels    = out_channels,
+                        kernel_size     = kernel_size,
+                        stride          = stride,
+                        padding         = padding)
         # ReLU activation
         self.relu = nn.ReLU(inplace = False)
         
