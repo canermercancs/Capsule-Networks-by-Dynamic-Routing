@@ -55,9 +55,12 @@ def margin_loss_v2(v_out, targ, m_p = 0.9, m_m = 0.1, lamb=0.5):
     return ((v_norm**2)*lamb_tens).sum()
 
 def recons_loss(im_out, im_targ):
-    # im_out is of shape : [batch_size, 1, im_height, im_width]
-    # im_targ is of shape : [batch_size, im_height*im_width]
+    """
+    Implements the reconstruction loss for Decoder layer. 
+    """
+    # im_out is of shape : [batch_size, im_height*im_width]
+    # im_targ is of shape : [batch_size, 1, im_height, im_width]
     batch_size = im_targ.size(0)
     im_targ = im_targ.squeeze(1).view(batch_size, -1)
-    return torch.sum((im_targ - im_out)**2)
+    return ((im_targ - im_out)**2).sum()
 
