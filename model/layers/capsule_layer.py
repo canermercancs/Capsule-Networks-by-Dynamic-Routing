@@ -48,14 +48,13 @@ class PrimaryCapsLayer(nn.Module):
         # out_channels = 32 
         # out_patch_size = 6, 6
         """
+        # pdb.set_trace()
         batch_size = inp.size(0)
-
         # running #num_units conv2d layers on input; unit_list is a list of size 8, each containing [64, 32x6x6] sized tensor. 
         unit_list = [conv2d(inp).view((batch_size, -1, 1)) for conv2d in self.conv2d_list]
         # convert unit_list to torch array of size: [64, 32x6x6, 8] (batch_size, out_channels x patch_height x patch_width, num_units)
         s = torch.cat(unit_list, dim=-1)
         # squash each 32x6x6 capsule unit on the last dimension (num_units:8) 
-        # v = self.squash(s, dim=-1)
         v = self.squash(s, dim=-1)
         # v is of shape [64, 1152, 8]
         return v
@@ -80,9 +79,8 @@ class DigitCapsLayer(nn.Module):
                      
     def forward(self, inp):   
         # inp is of shape: [batch_size, in_channels, in_units]
-        # sanity check        
-        assert inp.size(0) == self.args['batch_size']
-
+        # pdb.set_trace()
+        batch_size = inp.size(0)
         # the prediction vector u_hat; is of shape [batch_size, in_channels(1152), out_channels(10), out_units(16), 1]
         u_hat = self.__f_u_hat__(inp)        
         # b is of shape [1, in_channels(1152), out_channels(10), 1, 1]
@@ -96,7 +94,7 @@ class DigitCapsLayer(nn.Module):
             # c is shared across all batches; hence the multiplication of list with batch_size.
             # c is of shape: [batch_size, 1152, 10, 1, 1]
             c = F.softmax(b, dim=2)        
-            c = torch.cat([c]*self.args['batch_size'], dim=0)        
+            c = torch.cat([c]*batch_size, dim=0)        
             # s is of shape: [64, 1, 10, 16, 1] (summed over in_channels(i))
             s = torch.sum(u_hat*c, dim=1, keepdim=True)
             v = self.squash(s, dim=3)            
@@ -105,6 +103,10 @@ class DigitCapsLayer(nn.Module):
             
         # v is of shape: [64, 1, 10, 16, 1] to [64, 10, 16]
         return v.squeeze()
+
+
+    ### auxillery functions ####
+    ############################
 
     def __init_params__(self):        
         # W is of shape [1, in_channels(1152), out_channels(10), out_units(16), in_units(8)]
@@ -115,11 +117,12 @@ class DigitCapsLayer(nn.Module):
         helper function for the computation of prediction_vector u_hat(j given i):
         u_hat_j|i = W_ij * u_i
         """
+        batch_size = inp.size(0)
         # inp is of shape: [batch_size, in_channels, in_units]
         # u is of shape [batch_size, in_channels(1152), out_channels(10), in_units(8), 1]
         u = torch.stack(self.out_channels*[inp], dim=2).unsqueeze(-1)
         # W is shared across all batches; hence the multiplication of list with batch_size
-        W = torch.cat(self.args['batch_size']*[self.W], dim=0)#.to(self.args['device']) 
+        W = torch.cat(batch_size*[self.W], dim=0)#.to(self.args['device']) 
         # the prediction vector u_hat; is of shape [batch_size, in_channels(1152), out_channels(10), out_units(16), 1]
         return torch.matmul(W, u)
 
@@ -131,7 +134,7 @@ class DigitCapsLayer(nn.Module):
         # reshape u_hat and v for matrix multiplication. [1x16][16x1]=[1]
         # v is of shape: [64, 1152, 10, 16, 1]
         v = torch.cat([v]*self.in_channels, dim=1)        
-        # transpose the last two dims; u_hat is of shape now: [batch_size, in_channels(1152), out_channels(10), 1, out_units(16)]
+        # transpose the last two dims; u_hat is of shape now: [64, 1152, 10, 1, 16]
         u_hat = u_hat.transpose(-1,-2)
         # compute delta b from the mean of (u_hat.T*v) over all batches.
         return torch.matmul(u_hat, v).mean(dim=0, keepdim=True)
