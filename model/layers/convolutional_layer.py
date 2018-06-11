@@ -19,6 +19,5 @@ class ConvLayer(nn.Module):
         self.relu = nn.ReLU(inplace = False)
         
     def forward(self, inp):
-        inp = self.relu(self.conv2d(inp))
-        return inp
+        return self.relu(self.conv2d(inp))
     

@@ -25,7 +25,7 @@ def max_caps(v, dim=-1):
     the probability of capsule output vectors v of shape: [batch_size, num_capsules, dim_capsule]
     computes the norm (length) of vector
     """
-    v_norm = torch.sqrt(torch.sum(v**2, dim=dim))
+    v_norm = torch.sqrt(torch.sum(v**2, dim=dim)) # v_norm is of shape: [batch_size, num_capsules]
     return torch.max(v_norm, dim=1) # get max predictions of each batch.
 
 
